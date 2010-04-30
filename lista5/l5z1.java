@@ -1,206 +1,137 @@
 package l5z1;
 
-class ListNode implements Comparable <ListNode> {
-    public String element;
-    public ListNode next;
-    
-    public ListNode(String e, ListNode n) {
-        element = e;
+class Node<T extends Comparable<T>> {
+    private T elem;
+    private Node<T> next;
+
+    Node(T e) {
+        elem = e;
+    }
+
+    Node(T e, Node n) {
+        elem = e;
         next = n;
     }
-    
-    public ListNode(String e) {
-        this(e, null);
+
+    public Node<T> insert(T e) {
+        if(e.compareTo(elem) < 0)
+            return new Node(e, this);
+        else
+            if(next == null)
+                next = new Node(e);
+            else
+                next = next.insert(e);
+
+        return this;
     }
 
-    public int compareTo(ListNode n) {
-        return element.compareTo(n.element);
+    public Node remove() {
+        return next;
     }
 
-    public String toString() {
-        return element.toString();
-    }
-}
-
-class OrderedList {
-    private ListNode head;
-
-    public OrderedList( ) {
-        head = null;
-    }
-
-    public boolean empty( ) {
-        return head == null;
-    }
-
-    public void put(String e) {
-        if (head == null)
-            head = new ListNode(e);
-        else {
-            ListNode node = new ListNode(e);
-            ListNode curr = head, prev = null;
-
-            while (curr != null && curr.compareTo(node) < 0) {
-                prev = curr;
-                curr = curr.next;
-            }
-
-            if (prev == null) {
-                node.next = head;
-                head = node;
-            }
-            else {
-                prev.next = node;
-                node.next = curr;
-            }
-        }
-    }
-
-    public String get() {
-        String elem = head.element;
-        head = head.next;
-
+    public T get() {
         return elem;
     }
 
-    public void print() {
-        ListNode curr = head;
-
-        while (curr != null) {
-            System.out.println(curr);
-            curr = curr.next;
-        }
-    }
-}
-
-class Zolnierz {
-    protected String nazwisko;
-
-    public Zolnierz(String n) {
-        nazwisko = n;
-    }
-
+    @Override
     public String toString() {
-        return nazwisko;
-    }
-}
-
-class Szeregowy extends Zolnierz implements Comparable<Zolnierz> {
-    public Szeregowy(String n) {
-        super(n);
-    }
-
-    public int compareTo(Zolnierz z) {
-        if (z instanceof Szeregowy)
-            return 0;
+        if(next == null)
+            return elem.toString();
         else
-            return -1;
-    }
-
-    public String toString() {
-        return "szeregowy " + super.toString();
+            return elem.toString() + ", " + next.toString();
     }
 }
 
-class Kapral extends Zolnierz implements Comparable<Zolnierz> {
-    public Kapral(String n) {
-        super(n);
-    }
+class Colection<T extends Comparable<T>> {
+    Node<T> head;
 
-    public int compareTo(Zolnierz z) {
-        if (z instanceof Kapral)
-            return 0;
-        else if (z instanceof Szeregowy)
-            return 1;
+    public void insert(T e) {
+        if(head == null)
+            head = new Node(e);
         else
-            return -1;
+            head = head.insert(e);
     }
 
+    public T get() {
+        T e = (T) head.get();
+        head = head.remove();
+
+        return e;
+    }
+
+    @Override
     public String toString() {
-        return "kapral " + super.toString();
+        if (head == null)
+            return "";
+        else
+            return head.toString();
     }
 }
 
-class Sierzant extends Zolnierz implements Comparable<Zolnierz> {
-    public Sierzant(String n) {
-        super(n);
+class Value<T extends Comparable<T>>  implements Comparable<Value<T>> {
+    protected int valueClass;
+    protected T value;
+
+    public int compareTo(Value<T> v) {
+        if(valueClass == v.getValueClass())
+            return value.compareTo(v.getValue());
+        else
+            return valueClass - v.getValueClass();
     }
 
-    public int compareTo(Zolnierz z) {
-        if (z instanceof Sierzant)
-            return 0;
-        else {
-            Kapral k = new Kapral("");
-            if (k.compareTo(z) >= 0)
-                return 1;
-            else
-                return -1;
-        }
+    public int getValueClass() {
+        return valueClass;
     }
 
+    public T getValue() {
+        return value;
+    }
+
+    @Override
     public String toString() {
-        return "sierzant " + super.toString();
+        return this.getClass().getSimpleName() + " " + value;
     }
 }
 
-class Chorazy extends Zolnierz implements Comparable<Zolnierz> {
-    public Chorazy(String n) {
-        super(n);
+class Szeregowy extends Value {
+    public Szeregowy(String nazwisko) {
+        value = nazwisko;
+        valueClass = 100;
     }
+}
 
-    public int compareTo(Zolnierz z) {
-        if (z instanceof Chorazy)
-            return 0;
-        else {
-            Sierzant s = new Sierzant("");
-            if (s.compareTo(z) >= 0)
-                return 1;
-            else
-                return -1;
-        }
+class Kapral extends Value {
+    public Kapral(String nazwisko) {
+        value = nazwisko;
+        valueClass = 200;
     }
+}
 
-    public String toString() {
-        return "chorazy " + super.toString();
+class Sierzant extends Value {
+    public Sierzant(String nazwisko) {
+        value = nazwisko;
+        valueClass = 300;
+    }
+}
+
+class Chorazy extends Value {
+    public Chorazy(String nazwisko) {
+        value = nazwisko;
+        valueClass = 400;
     }
 }
 
 public class Main {
     public static void main(String[] args) {
-        OrderedList list = new OrderedList();
+        Colection<Value<String>> col = new Colection();
 
-        list.put("Ola");
-        list.put("Ala");
-        list.put("Maja");
-        list.put("Kasia");
-        list.put("Monika");
+        col.insert(new Chorazy("Kowalski"));
+        col.insert(new Szeregowy("Makowski"));
+        col.insert(new Sierzant("Kaczynski"));
+        col.insert(new Kapral("Burzynski"));
+        col.insert(new Sierzant("Kaminski"));
 
-        list.print();
-
-        while (!list.empty()) {
-            System.out.println(list.get());
-        }
-
-        Szeregowy kowalski = new Szeregowy("Kowalski");
-        Szeregowy kaczynski = new Szeregowy("Kaczynski");
-        Kapral burzynski = new Kapral("Burzynski");
-        Sierzant kaminski = new Sierzant("Kaminski");
-        Chorazy maczynski = new Chorazy("Maczynski");
-
-        System.out.println(kaczynski.compareTo(burzynski));
-        System.out.println(kowalski.compareTo(kaczynski));
-        System.out.println(burzynski.compareTo(kowalski));
-
-        if (kaminski.compareTo(kaczynski) > 0) {
-            System.out.print(kaminski);
-            System.out.print(" ma wyzszy stopien wojskowy niz ");
-            System.out.println(kaczynski);
-        }
-        
-        if (kaminski.compareTo(maczynski) < 0) {
-            System.out.print(kaminski);
-            System.out.print(" ma nizszy stopien wojskowy niz ");
-            System.out.println(maczynski);
-        }
+        System.out.println(col.toString());
     }
 }
+
